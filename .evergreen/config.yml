@@ -408,6 +408,7 @@ functions:
         export AUTHSOURCE=${AUTHSOURCE}
         export SSL=${SSL}
         export ORCHESTRATION_FILE=${ORCHESTRATION_FILE}
+        export AWS=${AWS}
         sh .evergreen/integration-tests.sh
   run tests:
   - command: shell.exec
@@ -482,6 +483,50 @@ functions:
         export OBSOLETE_TLS='${obsolete_tls}'
         export VALGRIND='${valgrind}'
         sh .evergreen/run-auth-tests.sh
+  run aws tests:
+  - command: shell.exec
+    type: test
+    params:
+      working_dir: mongoc
+      shell: bash
+      script: |-
+        set -o errexit
+        # Clone in one directory above so it does not get uploaded in working directory.
+        git clone --depth=1 git://github.com/bazile-clyde/drivers-evergreen-tools.git ../drivers-evergreen-tools
+
+        export DRIVERS_TOOLS=$(pwd)/../drivers-evergreen-tools
+        export CDRIVER_BUILD=$(pwd)
+        export MONGODB_BINARIES=$(pwd)/mongodb/bin
+
+        set +o xtrace # Hide credentials
+        # TODO: update ecs creds. I put in the FLE creds for now.
+        cat <<EOF > $DRIVERS_TOOLS/.evergreen/auth_aws/aws_e2e_setup.json
+        {
+            "iam_auth_ecs_account" : "${client_side_encryption_aws_access_key_id}",
+            "iam_auth_ecs_secret_access_key" : "${client_side_encryption_aws_secret_access_key}",
+            "iam_auth_ecs_account_arn": "arn:aws:iam::579766882180:user/BUILD-7242",
+            "iam_auth_ecs_cluster": "${iam_auth_ecs_cluster}",
+            "iam_auth_ecs_task_definition": "${iam_auth_ecs_task_definition}",
+            "iam_auth_ecs_subnet_a": "${iam_auth_ecs_subnet_a}",
+            "iam_auth_ecs_subnet_b": "${iam_auth_ecs_subnet_b}",
+            "iam_auth_ecs_security_group": "${iam_auth_ecs_security_group}",
+
+            "iam_auth_assume_aws_account" : "${iam_auth_assume_aws_account}",
+            "iam_auth_assume_aws_secret_access_key" : "${iam_auth_assume_aws_secret_access_key}",
+            "iam_auth_assume_role_name" : "${iam_auth_assume_role_name}",
+
+            "iam_auth_ec2_instance_account" : "${iam_auth_ec2_instance_account}",
+            "iam_auth_ec2_instance_secret_access_key" : "${iam_auth_ec2_instance_secret_access_key}",
+            "iam_auth_ec2_instance_profile" : "${iam_auth_ec2_instance_profile}"
+        }
+        EOF
+
+        # Export the variables we need to construct URIs
+        export IAM_AUTH_ECS_ACCOUNT=${client_side_encryption_aws_access_key_id}
+        export IAM_AUTH_ECS_SECRET_ACCESS_KEY=${client_side_encryption_aws_secret_access_key}
+        set -o xtrace
+
+        sh ./.evergreen/run-aws-tests.sh
   run mock server tests:
   - command: shell.exec
     type: test
@@ -12324,6 +12369,21 @@ tasks:
     vars:
       IPV4_ONLY: 'on'
       URI: mongodb://localhost/
+# TODO: test regular credentials on Windows/macOS
+- name: test-aws-openssl
+  depends_on:
+    name: debug-compile-sasl-openssl
+  commands:
+  - func: fetch build
+    vars:
+      BUILD_NAME: debug-compile-sasl-openssl
+  - func: bootstrap mongo-orchestration
+    vars:
+      AUTH: auth
+      AWS: aws
+      VERSION: latest
+      TOPOLOGY: server
+  - func: run aws tests
 buildvariants:
 - name: releng
   display_name: '**Release Archive Creator'
@@ -12503,6 +12563,15 @@ buildvariants:
   - .4.0 .openssl !.nosasl .server
   - .3.6 .openssl !.nosasl .server
   - .test-coverage !.3.0
+- name: clang60ubuntu
+  display_name: clang 6.0 (Ubuntu 18.04)
+  expansions:
+    CC: clang
+  run_on: ubuntu1804-test
+  tasks:
+  - debug-compile-sasl-openssl
+  - test-aws-openssl
+  # TODO: move other tasks from Ubuntu 16.04 that we can move.
 - name: gcc46
   display_name: GCC 4.6 (Ubuntu 12.04)
   expansions:

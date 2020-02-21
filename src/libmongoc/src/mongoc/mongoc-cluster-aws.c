@@ -577,7 +577,6 @@ _mongoc_aws_credentials_obtain (mongoc_uri_t *uri,
    creds->secret_access_key = NULL;
    creds->session_token = NULL;
 
-   TRACE ("%s", "checking URI")
    if (!_set_creds_from_uri (creds, uri, &creds_set, error)) {
       goto fail;
    }
@@ -585,7 +584,6 @@ _mongoc_aws_credentials_obtain (mongoc_uri_t *uri,
       goto succeed;
    }
 
-   TRACE ("%s", "checking environment variables")
    if (!_set_creds_from_env (creds, &creds_set, error)) {
       goto fail;
    }
@@ -593,7 +591,6 @@ _mongoc_aws_credentials_obtain (mongoc_uri_t *uri,
       goto succeed;
    }
 
-   TRACE ("%s", "checking ECS metadata")
    if (!_set_creds_from_ecs (creds, &creds_set, error)) {
       goto fail;
    }
@@ -601,7 +598,6 @@ _mongoc_aws_credentials_obtain (mongoc_uri_t *uri,
       goto succeed;
    }
 
-   TRACE ("%s", "checking EC2 metadata")
    if (!_set_creds_from_ec2 (creds, &creds_set, error)) {
       goto fail;
    }

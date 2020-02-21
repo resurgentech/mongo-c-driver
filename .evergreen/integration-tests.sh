@@ -40,6 +40,9 @@ fi
 
 if [ "$AUTH" = "auth" ]; then
   ORCHESTRATION_FILE="auth"
+  if [ "$AWS" = "aws" ]; then
+   ORCHESTRATION_FILE="auth-aws"
+  fi
   MONGO_SHELL_CONNECTION_FLAGS="-ubob -ppwd123"
 fi
 
