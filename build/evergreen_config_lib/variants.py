@@ -583,5 +583,13 @@ all_variants = [
             ['.debug-compile .asan-clang !.client-side-encryption',
              '.test-asan .3.0'],
             {'CC': 'clang'},
-            batchtime=1440)
+            batchtime=1440),
+    Variant ('clang60ubuntu', 'clang 6.0 (Ubuntu 18.04)', 'ubuntu1804-test', [
+        'debug-compile-aws',
+        'test-aws-openssl-regular',
+        'test-aws-openssl-ec2',
+        'test-aws-openssl-ecs',
+        'test-aws-openssl-assume_role',
+        'test-aws-openssl-lambda'
+    ], {'CC': 'clang'})
 ]

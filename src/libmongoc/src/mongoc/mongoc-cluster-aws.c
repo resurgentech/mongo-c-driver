@@ -176,10 +176,12 @@ _send_http_request (const char *ip,
       need_slash = true;
    }
 
-   http_request = bson_strdup_printf ("%s %s%s HTTP/1.1\r\n%s\r\n",
+   /* Always add 'Host: <domain>' header. */
+   http_request = bson_strdup_printf ("%s %s%s HTTP/1.1\r\nHost: %s\r\n%s\r\n",
                                       method,
                                       need_slash ? "/" : "",
                                       path,
+                                      ip,
                                       headers);
    iovec.iov_base = http_request;
    iovec.iov_len = strlen (http_request);
@@ -368,7 +370,7 @@ _set_creds_from_ecs (_mongoc_aws_credentials_t *creds,
    bson_error_t http_error;
 
    relative_ecs_uri = _mongoc_getenv ("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
-   if (!relative_ecs_uri) {
+   if (!relative_ecs_uri || strlen (relative_ecs_uri) == 0) {
       *creds_set = false;
       return true;
    }
@@ -510,7 +512,7 @@ _set_creds_from_ec2 (_mongoc_aws_credentials_t *creds,
    response_json = bson_new_from_json (
       (const uint8_t *) http_response_body, strlen (http_response_body), error);
    if (!response_json) {
-      AUTH_ERROR_AND_FAIL ("invalid JSON in ECS response. Response headers: %s",
+      AUTH_ERROR_AND_FAIL ("invalid JSON in EC2 response. Response headers: %s",
                            http_response_headers);
    }
 
@@ -579,6 +581,7 @@ _mongoc_aws_credentials_obtain (mongoc_uri_t *uri,
       goto fail;
    }
    if (creds_set) {
+      printf ("from libmongoc: creds set from uri\n");
       goto succeed;
    }
 
@@ -586,6 +589,7 @@ _mongoc_aws_credentials_obtain (mongoc_uri_t *uri,
       goto fail;
    }
    if (creds_set) {
+      printf ("from libmongoc: creds set from env\n");
       goto succeed;
    }
 
@@ -593,6 +597,7 @@ _mongoc_aws_credentials_obtain (mongoc_uri_t *uri,
       goto fail;
    }
    if (creds_set) {
+      printf ("from libmongoc: creds set from ecs\n");
       goto succeed;
    }
 
@@ -600,8 +605,11 @@ _mongoc_aws_credentials_obtain (mongoc_uri_t *uri,
       goto fail;
    }
    if (creds_set) {
+      printf ("from libmongoc: creds set from ec2\n");
       goto succeed;
    }
+
+   AUTH_ERROR_AND_FAIL ("unable to get credentials\n");
 
 succeed:
    ret = true;
