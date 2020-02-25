@@ -905,7 +905,7 @@ _client_second (mongoc_cluster_t *cluster,
    char *signature = NULL;
    const char *date = NULL;
    const size_t server_nonce_str_len = bson_b64_ntop_calculate_target_size (64);
-   char server_nonce_str[server_nonce_str_len];
+   char *server_nonce_str = NULL;
    const char *body = "Action=GetCallerIdentity&Version=2011-06-15";
    bson_t client_payload = BSON_INITIALIZER;
    bson_t client_command = BSON_INITIALIZER;
@@ -921,6 +921,8 @@ _client_second (mongoc_cluster_t *cluster,
    BSON_ASSERT (conv_id);
    BSON_ASSERT (creds->access_key_id);
    BSON_ASSERT (creds->secret_access_key);
+
+   server_nonce_str = bson_malloc(server_nonce_str_len);
 
    request = kms_request_new ("POST", "/", NULL);
    if (kms_request_get_error (request)) {
@@ -1000,6 +1002,7 @@ fail:
    bson_destroy (&server_payload);
    kms_request_destroy (request);
    free (signature);
+   bson_free (server_nonce_str);
    return ret;
 }
 
