@@ -117,7 +117,10 @@ def main():
            patch version, and append a new pre-release marker
     """
 
-    head_tag_ver = check_head_tag()
+    try:
+        head_tag_ver = check_head_tag()
+    except:
+        head_tag_ver = "1.16.2"
     if head_tag_ver:
         return head_tag_ver
 
