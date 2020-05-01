@@ -29,3 +29,8 @@ VERSION_RELEASED
 Debug
 install_manifest.txt
 x64
+
+# hacks for make
+src/libbson/bson/
+src/libmongoc/accept_test1.c
+src/libmongoc/mongoc/
