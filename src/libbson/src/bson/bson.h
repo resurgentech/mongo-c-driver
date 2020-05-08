@@ -530,6 +530,19 @@ bson_as_canonical_extended_json (const bson_t *bson, size_t *length);
 BSON_EXPORT (char *)
 bson_as_json (const bson_t *bson, size_t *length);
 
+/**
+ * bson_as_pointer:
+ * @bson: A bson_t.
+ * @length: A location for the buffer length, or NULL.
+ *
+ * Returns pointer to raw @bson data.
+ * Caller responsible for freeing the resulting string. If @length is non-NULL, then
+ * the length of the resulting string will be placed in @length.
+ *
+ * Returns: pointer to bson data.
+ */
+BSON_EXPORT (void *)
+bson_as_pointer (const bson_t *bson, size_t *length);
 
 /**
  * bson_as_relaxed_extended_json:

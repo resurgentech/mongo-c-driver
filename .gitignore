@@ -34,3 +34,6 @@ x64
 src/libbson/bson/
 src/libmongoc/accept_test1.c
 src/libmongoc/mongoc/
+
+src/libbson/bson-check-depth
+*.cbp

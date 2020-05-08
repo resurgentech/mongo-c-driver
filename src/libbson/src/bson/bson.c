@@ -3196,6 +3196,16 @@ bson_as_json (const bson_t *bson, size_t *length)
 }
 
 
+void *
+bson_as_pointer (const bson_t *bson, size_t *length)
+{
+    void * data;
+    data = _bson_data(bson);
+    *length = bson->len;
+    return data;
+}
+
+
 char *
 bson_as_relaxed_extended_json (const bson_t *bson, size_t *length)
 {
