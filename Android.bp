@@ -1,0 +1,51 @@
+cc_defaults {
+    name: "libbson_defaults",
+    cflags: [
+        "-O3",
+        "-Wall",
+        "-Werror",
+        "-Wdeclaration-after-statement",
+        "-Wwrite-strings",
+        "-ffast-math",
+        "-fno-omit-frame-pointer",
+        "-std=gnu99",
+        "-Wno-macro-redefined",
+        "-Wno-incompatible-pointer-types-discards-qualifiers",
+        "-Wno-missing-field-initializers",
+        "-Wno-pointer-arith",
+        "-Wno-sign-compare",
+        "-Wno-unused-parameter",
+        "-Wno-unused-variable",
+        "-include sys/sysmacros.h",
+	"-DJSONSL_PARSE_NAN",
+	"-DBSON_COMPILATION",
+	"-DBSON_STATIC",
+
+    ],
+
+    arch: {
+        mips: {
+            enabled: false,
+        },
+        mips64: {
+            enabled: false,
+        },
+    },
+
+    tidy_checks: ["-clang-analyzer*"],
+}
+
+cc_library_static {
+    name: "libbson-static-1.0",
+    defaults: ["libbson_defaults"],
+    shared_libs: [],
+    static_libs: [],
+    srcs: [
+        "src/libbson/src/*.c",
+        "src/libbson/src/bson/*.c",
+    ],
+    local_include_dirs: ["src/libbson/src","src/libbson/src/bson","src/common",],
+
+    export_include_dirs: ["src/libbson/.","src/libbson/src/.",],
+}
+
