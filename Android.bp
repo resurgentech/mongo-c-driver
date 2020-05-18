@@ -43,6 +43,7 @@ cc_library_static {
     srcs: [
         "src/libbson/src/*.c",
         "src/libbson/src/bson/*.c",
+	"src/common/*.c",
     ],
     local_include_dirs: ["src/libbson/src","src/libbson/src/bson","src/common",],
 
